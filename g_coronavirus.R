@@ -24,7 +24,8 @@ g <-
        x="Mês",
        colour="Termo de pesquisa",
        title="Série temporal da popularidade do termo 'Corona Virus' no mundo",
-       subtitle = "Nos últimos 3 meses")
+       subtitle = "Nos últimos 3 meses",
+       caption = "data source: Google Trends|plot by @gomesfellipe")
 
 # Salvar grafico
 ggsave("coronavirus.png", g)
@@ -55,8 +56,9 @@ g <-
        x = "Estado da província",
        title = "Evolução do nº de casos de Covid-19 no mundo",
        subtitle = paste0("Até o dia: ", format(max(coronavirus$date), "%d/%m/%y")),
-       caption = "(*) Os dados de Hubei não foram incluídos no gráfico pois foi
-       o epicentro da epidemia, registrando o maior número de casos") +
+       caption = "Os dados de Hubei não foram incluídos no gráfico pois foi
+       o epicentro da epidemia, registrando o maior número de casos
+       data source: coronavirus package|plot by @gomesfellipe") +
   transition_states(date)+
   geom_text(aes(x=-Inf, y=Inf, label=format(date, "%d/%m/%y"),vjust="inward",hjust="inward"))
 
