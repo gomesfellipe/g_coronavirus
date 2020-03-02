@@ -4,6 +4,12 @@ Este repositório contém o código utilizando para praticar a crição de gráf
 
 O código pode ser encontrado [aqui](./g_coronavirus.R)!
 
-O gráfico gerado:
+Gráficos gerados:
+
+  * Utilizando dados do Google Trends
+  
+![](coronavirus.png)
+
+  * Utilizando dados do pacote coronavirus:
 
 ![](coronavirus.gif)
