@@ -5,6 +5,29 @@ library(tidyr)       # manipulacao de dados
 library(purrr)       # programacao funcional
 library(ggplot2)     # graficos elegantes
 library(gganimate)   # graficos animados 
+library(gtrendsR)    # dados Google Trends
+
+# Obter dados dos ultimos 3 meses:
+gtrends_coronavirus <- gtrends(c("Corona virus"), time = "today 3-m", )
+
+# Grafico
+g <- 
+  gtrends_coronavirus$interest_over_time %>%
+  as_tibble() %>%
+  mutate(hits = as.numeric(hits),
+         hits = ifelse(is.na(hits), 0, hits)) %>%
+  ggplot(aes(x=date,y=hits,colour=keyword))+
+  geom_line()+
+  geom_point()+
+  theme_bw()+
+  labs(y="Popularidade",
+       x="Mês",
+       colour="Termo de pesquisa",
+       title="Série temporal da popularidade do termo 'Corona Virus' no mundo",
+       subtitle = "Nos últimos 3 meses")
+
+# Salvar grafico
+ggsave("coronavirus.png", g)
 
 # Grafico
 g <- 
@@ -26,11 +49,12 @@ g <-
   facet_wrap(~type, scales = "free") +
   coord_flip() +
   tidytext::scale_x_reordered() +
+  theme_bw()+
   ggsci::scale_fill_uchicago()+
   labs(y = "",
        x = "Estado da província",
        title = "Evolução do nº de casos de Covid-19 no mundo",
-       subtitle = paste0("Até o dia: ", format(Sys.Date(), "%d/%m/%y")),
+       subtitle = paste0("Até o dia: ", format(max(coronavirus$date), "%d/%m/%y")),
        caption = "(*) Os dados de Hubei não foram incluídos no gráfico pois foi
        o epicentro da epidemia, registrando o maior número de casos") +
   transition_states(date)+
