@@ -47,7 +47,7 @@ g <-
   mutate(Province.State = tidytext::reorder_within(Province.State, cum_cases, type)) %>% 
   ggplot(aes(Province.State, cum_cases, fill = type)) +
   geom_col(show.legend = FALSE) +
-  facet_wrap(~type, scales = "free") +
+  facet_wrap(~type, scales = "free_y") +
   coord_flip() +
   tidytext::scale_x_reordered() +
   theme_bw()+
@@ -64,3 +64,18 @@ g <-
 
 # Salvar animacao
 magick::image_write(animate(g), path="coronavirus.gif")
+
+coronavirus %>%
+  filter(cases >= 0, Province.State != "") %>% 
+  group_by(Province.State, type) %>%
+  nest() %>% 
+  mutate(data = map(data, ~ complete(.x, date = seq.Date(min(coronavirus$date),
+                                                         max(coronavirus$date), by="day"), 
+                                     fill = list(cases = 0)))) %>% 
+  unnest(cols = c(data)) %>%
+  mutate(cum_cases = cumsum(cases)) %>% 
+  ungroup() %>% 
+  filter(Province.State != "Hubei") %>%
+  mutate(type = factor(type, levels = c("confirmed", "recovered", "death"))) %>% 
+  group_by(type) %>% 
+  summarise(max = max(cum_cases))
