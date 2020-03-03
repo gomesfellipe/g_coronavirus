@@ -44,38 +44,27 @@ g <-
   ungroup() %>% 
   filter(Province.State != "Hubei") %>%
   mutate(type = factor(type, levels = c("confirmed", "recovered", "death"))) %>%
-  mutate(Province.State = tidytext::reorder_within(Province.State, cum_cases, type)) %>% 
-  ggplot(aes(Province.State, cum_cases, fill = type)) +
-  geom_col(show.legend = FALSE) +
-  facet_wrap(~type, scales = "free_y") +
-  coord_flip() +
-  tidytext::scale_x_reordered() +
-  theme_bw()+
-  ggsci::scale_fill_uchicago()+
-  labs(y = "",
-       x = "Estado da província",
-       title = "Evolução do nº de casos de Covid-19 no mundo",
-       subtitle = paste0("Até o dia: ", format(max(coronavirus$date), "%d/%m/%y")),
-       caption = "Os dados de Hubei não foram incluídos no gráfico pois foi
+  mutate(Province.State = tidytext::reorder_within(Province.State, cum_cases, type)) %>%
+  {
+    ggplot(., aes(Province.State, cum_cases, fill = type, group = type)) +
+      geom_col(show.legend = FALSE) +
+      facet_wrap(~type, scales = "free_y") +
+      coord_flip() +
+      tidytext::scale_x_reordered() +
+      theme_bw()+
+      ggsci::scale_fill_uchicago()+
+      labs(y = "",
+           x = "Estado da província",
+           title = "Evolução do nº de casos de Covid-19 no mundo",
+           subtitle = paste0("Até o dia: ", format(max(coronavirus$date), "%d/%m/%y")),
+           caption = "Os dados de Hubei não foram incluídos no gráfico pois foi
        o epicentro da epidemia, registrando o maior número de casos
        data source: coronavirus package|plot by @gomesfellipe") +
-  transition_states(date)+
-  geom_text(aes(x=-Inf, y=Inf, label=format(date, "%d/%m/%y"),vjust="inward",hjust="inward"))
+      transition_states(date)+
+      geom_text(data = distinct(., date, type),
+                aes(x=-Inf, y=Inf, label=format(date, "%d/%m/%y"),vjust="inward",hjust="inward"))
+  }
 
 # Salvar animacao
 magick::image_write(animate(g), path="coronavirus.gif")
 
-coronavirus %>%
-  filter(cases >= 0, Province.State != "") %>% 
-  group_by(Province.State, type) %>%
-  nest() %>% 
-  mutate(data = map(data, ~ complete(.x, date = seq.Date(min(coronavirus$date),
-                                                         max(coronavirus$date), by="day"), 
-                                     fill = list(cases = 0)))) %>% 
-  unnest(cols = c(data)) %>%
-  mutate(cum_cases = cumsum(cases)) %>% 
-  ungroup() %>% 
-  filter(Province.State != "Hubei") %>%
-  mutate(type = factor(type, levels = c("confirmed", "recovered", "death"))) %>% 
-  group_by(type) %>% 
-  summarise(max = max(cum_cases))
